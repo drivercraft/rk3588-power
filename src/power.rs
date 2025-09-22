@@ -6,7 +6,7 @@
 //! - 热管理
 //! - 睡眠模式控制
 
-use crate::registers::{Rk3588Pmu, RK3588_PMU_BASE};
+use crate::registers::{Rk3588Pmu, RK3588_PMU_BASE, power_optimization, wakeup_config};
 use crate::{
     PowerDomain, PowerState, PowerError, PowerResult, CpuFreq, cpu_freqs,
     RegisterAccess, PowerStatus
@@ -15,7 +15,7 @@ use log::{debug, error, info, warn};
 
 /// RK3588 电源管理驱动主结构
 pub struct Rk3588PowerManager<R: RegisterAccess> {
-    _register_access: R,  // 改为 _register_access 避免未使用警告
+    _register_access: R,
     pmu: Rk3588Pmu,
     /// 当前各电源域状态
     domain_states: [PowerState; 12],
@@ -76,19 +76,27 @@ impl<R: RegisterAccess> Rk3588PowerManager<R> {
     
     /// 配置唤醒源
     fn configure_wakeup_sources(&mut self) -> PowerResult<()> {
-        // 配置 GPIO 唤醒
-        self.pmu.configure_wakeup(0x0000_0003, 0x0000_0001);
+        // 使用预定义常量，避免魔数
+        self.pmu.configure_wakeup(
+            wakeup_config::GPIO_WAKEUP_PIN_0_1,  // GPIO 0-1 唤醒使能
+            true,  // RTC 唤醒使能
+            false, // 网络唤醒禁用
+            true   // USB 唤醒使能
+        );
         
-        debug!("Wakeup sources configured");
+        debug!("Wakeup sources configured using predefined constants");
         Ok(())
     }
     
     /// 配置功耗优化
     fn configure_power_optimization(&mut self) -> PowerResult<()> {
-        // 启用自动时钟门控和配置空闲时的总线控制
-        self.pmu.configure_power_optimization(0xFFFF_FFFF, 0x0000_0000);
+        // 使用预定义常量，完全避免魔数
+        self.pmu.configure_power_optimization(
+            power_optimization::NOC_ALL_AUTO_FEATURES_ENABLED,
+            power_optimization::BUS_IDLE_ALL_DISABLED
+        );
         
-        debug!("Power optimization configured");
+        debug!("Power optimization configured: NOC auto features enabled, bus idle disabled");
         Ok(())
     }
     
@@ -114,16 +122,13 @@ impl<R: RegisterAccess> Rk3588PowerManager<R> {
     
     /// 开启电源域
     fn power_on_domain(&mut self, domain: PowerDomain) -> PowerResult<()> {
-        let domain_bit = 1u32 << (domain as u32);
-        
-        // 清除电源关闭控制位
-        self.pmu.modify_pwrdn_control(|current| current & !domain_bit);
+        // 使用新的位域接口
+        self.pmu.control_power_domain(domain, true);
         
         // 等待电源域稳定
         let mut timeout = 1000;
         while timeout > 0 {
-            let status = self.pmu.read_pwrdn_status();
-            if (status & domain_bit) == 0 {
+            if self.pmu.is_power_domain_on(domain) {
                 break;
             }
             timeout -= 1;
@@ -142,16 +147,13 @@ impl<R: RegisterAccess> Rk3588PowerManager<R> {
     
     /// 关闭电源域
     fn power_off_domain(&mut self, domain: PowerDomain) -> PowerResult<()> {
-        let domain_bit = 1u32 << (domain as u32);
-        
-        // 设置电源关闭控制位
-        self.pmu.modify_pwrdn_control(|current| current | domain_bit);
+        // 使用新的位域接口
+        self.pmu.control_power_domain(domain, false);
         
         // 等待电源域关闭
         let mut timeout = 1000;
         while timeout > 0 {
-            let status = self.pmu.read_pwrdn_status();
-            if (status & domain_bit) != 0 {
+            if !self.pmu.is_power_domain_on(domain) {
                 break;
             }
             timeout -= 1;
@@ -225,9 +227,9 @@ impl<R: RegisterAccess> Rk3588PowerManager<R> {
     fn enter_sleep(&mut self) -> PowerResult<()> {
         info!("Entering sleep mode");
         
-        // 配置并触发睡眠模式
-        self.pmu.set_power_mode(0x0000_0001); // 睡眠模式
-        self.pmu.trigger_software_control(0x0000_0001);
+        // 使用新的接口设置睡眠模式
+        self.pmu.set_power_mode(PowerState::Sleep);
+        self.pmu.trigger_software_control(false, true, false);
         
         Ok(())
     }
@@ -248,9 +250,9 @@ impl<R: RegisterAccess> Rk3588PowerManager<R> {
             self.control_power_domain(*domain, PowerState::Off)?;
         }
         
-        // 配置并触发深度睡眠模式
-        self.pmu.set_power_mode(0x0000_0002); // 深度睡眠模式
-        self.pmu.trigger_software_control(0x0000_0002);
+        // 使用新的接口设置深度睡眠模式
+        self.pmu.set_power_mode(PowerState::DeepSleep);
+        self.pmu.trigger_software_control(false, false, true);
         
         Ok(())
     }

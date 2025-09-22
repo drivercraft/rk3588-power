@@ -1,10 +1,11 @@
 //! RK3588 PMU 寄存器定义
 //! 
 //! 使用 tock-registers 库提供的宏来定义 RK3588 PMU（电源管理单元）的寄存器结构
+//! 包含详细的位域定义，增强代码可读性和类型安全性
 
 use tock_registers::{
-    interfaces::{Readable, Writeable},
-    register_structs,
+    interfaces::{Readable, Writeable, ReadWriteable},
+    register_bitfields, register_structs,
     registers::{ReadOnly, ReadWrite, WriteOnly},
 };
 use core::ptr::NonNull;
@@ -13,22 +14,192 @@ use core::ptr::NonNull;
 /// 兼容 RK3588 和 RK3588S，适用于 Orange Pi 5 Plus 等开发板
 pub const RK3588_PMU_BASE: u32 = 0xFD8D_0000;
 
+/// 功耗优化配置常量
+pub mod power_optimization {
+    /// 启用所有 NOC 自动功能（时钟门控和睡眠）
+    pub const NOC_ALL_AUTO_FEATURES_ENABLED: u32 = 0xFFFF_FFFF;
+    /// 禁用所有 NOC 自动功能
+    pub const NOC_ALL_AUTO_FEATURES_DISABLED: u32 = 0x0000_0000;
+    /// 启用所有总线空闲请求
+    pub const BUS_IDLE_ALL_ENABLED: u32 = 0xFFFF_FFFF;
+    /// 禁用所有总线空闲请求
+    pub const BUS_IDLE_ALL_DISABLED: u32 = 0x0000_0000;
+}
+
+/// 唤醒配置常量
+pub mod wakeup_config {
+    /// GPIO 唤醒配置
+    pub const GPIO_WAKEUP_PIN_0_1: u8 = 0x03;  // GPIO 0 和 1 唤醒使能
+    pub const GPIO_WAKEUP_PIN_0_3: u8 = 0x0F;  // GPIO 0-3 唤醒使能
+    pub const GPIO_WAKEUP_ALL_DISABLED: u8 = 0x00; // 所有 GPIO 唤醒禁用
+}
+
+register_bitfields! {
+    u32,
+
+    /// 唤醒配置寄存器 0 (0x0000)
+    pub WAKEUP_CFG0 [
+        /// GPIO 唤醒使能
+        GPIO_WAKEUP_EN OFFSET(0) NUMBITS(8) [],
+        /// RTC 唤醒使能
+        RTC_WAKEUP_EN OFFSET(8) NUMBITS(1) [],
+        /// 网络唤醒使能
+        NET_WAKEUP_EN OFFSET(9) NUMBITS(1) [],
+        /// USB 唤醒使能
+        USB_WAKEUP_EN OFFSET(10) NUMBITS(1) [],
+        /// 保留位
+        RESERVED OFFSET(11) NUMBITS(21) []
+    ],
+
+    /// 电源关闭控制寄存器 (0x0018)
+    pub PWRDN_CON [
+        /// CPU 小核心集群电源控制
+        CPU_LITTLE_PWRDN OFFSET(0) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// CPU 大核心集群电源控制
+        CPU_BIG_PWRDN OFFSET(1) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// GPU 电源控制
+        GPU_PWRDN OFFSET(2) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// NPU 电源控制
+        NPU_PWRDN OFFSET(3) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// VPU 电源控制
+        VPU_PWRDN OFFSET(4) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// RGA 电源控制
+        RGA_PWRDN OFFSET(5) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// VI 电源控制
+        VI_PWRDN OFFSET(6) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// VO 电源控制
+        VO_PWRDN OFFSET(7) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// 音频电源控制
+        AUDIO_PWRDN OFFSET(8) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// USB 电源控制
+        USB_PWRDN OFFSET(9) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// PCIe 电源控制
+        PCIE_PWRDN OFFSET(10) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// SDMMC 电源控制
+        SDMMC_PWRDN OFFSET(11) NUMBITS(1) [
+            PowerOn = 0,
+            PowerOff = 1
+        ],
+        /// 保留位
+        RESERVED OFFSET(12) NUMBITS(20) []
+    ],
+
+    /// 电源关闭状态寄存器 (0x0020)
+    pub PWRDN_ST [
+        /// CPU 小核心集群电源状态
+        CPU_LITTLE_ST OFFSET(0) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// CPU 大核心集群电源状态
+        CPU_BIG_ST OFFSET(1) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// GPU 电源状态
+        GPU_ST OFFSET(2) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// NPU 电源状态
+        NPU_ST OFFSET(3) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// VPU 电源状态
+        VPU_ST OFFSET(4) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// RGA 电源状态
+        RGA_ST OFFSET(5) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// VI 电源状态
+        VI_ST OFFSET(6) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// VO 电源状态
+        VO_ST OFFSET(7) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// 音频电源状态
+        AUDIO_ST OFFSET(8) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// USB 电源状态
+        USB_ST OFFSET(9) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// PCIe 电源状态
+        PCIE_ST OFFSET(10) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// SDMMC 电源状态
+        SDMMC_ST OFFSET(11) NUMBITS(1) [
+            PoweredOff = 0,
+            PoweredOn = 1
+        ],
+        /// 保留位
+        RESERVED OFFSET(12) NUMBITS(20) []
+    ]
+}
+
 register_structs! {
     /// RK3588 PMU 寄存器结构
     #[allow(non_snake_case)]
     pub Rk3588PmuRegs {
         /// 唤醒配置寄存器 0
-        (0x0000 => pub WAKEUP_CFG0: ReadWrite<u32>),
+        (0x0000 => pub WAKEUP_CFG0: ReadWrite<u32, WAKEUP_CFG0::Register>),
         /// 唤醒配置寄存器 1  
         (0x0004 => pub WAKEUP_CFG1: ReadWrite<u32>),
         /// 保留区域 1
         (0x0008 => _reserved1),
         /// 电源关闭控制寄存器
-        (0x0018 => pub PWRDN_CON: ReadWrite<u32>),
+        (0x0018 => pub PWRDN_CON: ReadWrite<u32, PWRDN_CON::Register>),
         /// 保留区域 2
         (0x001C => _reserved2),
         /// 电源关闭状态寄存器
-        (0x0020 => pub PWRDN_ST: ReadOnly<u32>),
+        (0x0020 => pub PWRDN_ST: ReadOnly<u32, PWRDN_ST::Register>),
         /// 电源模式控制寄存器
         (0x0024 => pub PWRMODE_CON: ReadWrite<u32>),
         /// 软件控制寄存器
@@ -155,33 +326,172 @@ impl Rk3588Pmu {
         self.regs().PWRDN_ST.get()
     }
     
-    /// 设置电源关闭控制
-    pub fn set_pwrdn_control(&self, value: u32) {
-        self.regs().PWRDN_CON.set(value);
+    /// 检查特定电源域是否开启
+    /// 使用位域操作，提高代码可读性
+    pub fn is_power_domain_on(&self, domain: crate::PowerDomain) -> bool {
+        match domain {
+            crate::PowerDomain::CpuLittle => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::CPU_LITTLE_ST)
+            }
+            crate::PowerDomain::CpuBig => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::CPU_BIG_ST)
+            }
+            crate::PowerDomain::Gpu => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::GPU_ST)
+            }
+            crate::PowerDomain::Npu => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::NPU_ST)
+            }
+            crate::PowerDomain::Vpu => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::VPU_ST)
+            }
+            crate::PowerDomain::Rga => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::RGA_ST)
+            }
+            crate::PowerDomain::Vi => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::VI_ST)
+            }
+            crate::PowerDomain::Vo => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::VO_ST)
+            }
+            crate::PowerDomain::Audio => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::AUDIO_ST)
+            }
+            crate::PowerDomain::Usb => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::USB_ST)
+            }
+            crate::PowerDomain::Pcie => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::PCIE_ST)
+            }
+            crate::PowerDomain::Sdmmc => {
+                self.regs().PWRDN_ST.is_set(PWRDN_ST::SDMMC_ST)
+            }
+        }
     }
     
-    /// 修改电源关闭控制寄存器的特定位
-    pub fn modify_pwrdn_control<F>(&self, f: F) 
-    where
-        F: FnOnce(u32) -> u32,
-    {
-        let current = self.regs().PWRDN_CON.get();
-        self.regs().PWRDN_CON.set(f(current));
+    /// 控制电源域开关
+    /// 使用位域操作，避免直接地址操作
+    pub fn control_power_domain(&self, domain: crate::PowerDomain, enable: bool) {
+        match domain {
+            crate::PowerDomain::CpuLittle => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::CPU_LITTLE_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::CPU_LITTLE_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::CpuBig => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::CPU_BIG_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::CPU_BIG_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Gpu => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::GPU_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::GPU_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Npu => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::NPU_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::NPU_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Vpu => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::VPU_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::VPU_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Rga => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::RGA_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::RGA_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Vi => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::VI_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::VI_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Vo => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::VO_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::VO_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Audio => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::AUDIO_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::AUDIO_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Usb => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::USB_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::USB_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Pcie => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::PCIE_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::PCIE_PWRDN::PowerOff);
+                }
+            }
+            crate::PowerDomain::Sdmmc => {
+                if enable {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::SDMMC_PWRDN::PowerOn);
+                } else {
+                    self.regs().PWRDN_CON.modify(PWRDN_CON::SDMMC_PWRDN::PowerOff);
+                }
+            }
+        }
     }
     
     /// 配置唤醒源
-    pub fn configure_wakeup(&self, cfg0: u32, gpio0_pos: u32) {
-        self.regs().WAKEUP_CFG0.set(cfg0);
-        self.regs().GPIO0_POS_INT_CON.set(gpio0_pos);
+    /// 使用位域操作设置唤醒源
+    pub fn configure_wakeup(&self, gpio_mask: u8, rtc_enable: bool, net_enable: bool, usb_enable: bool) {
+        self.regs().WAKEUP_CFG0.modify(
+            WAKEUP_CFG0::GPIO_WAKEUP_EN.val(gpio_mask as u32)
+                + WAKEUP_CFG0::RTC_WAKEUP_EN.val(rtc_enable as u32)
+                + WAKEUP_CFG0::NET_WAKEUP_EN.val(net_enable as u32)
+                + WAKEUP_CFG0::USB_WAKEUP_EN.val(usb_enable as u32)
+        );
     }
     
     /// 设置电源模式
-    pub fn set_power_mode(&self, mode: u32) {
-        self.regs().PWRMODE_CON.set(mode);
+    pub fn set_power_mode(&self, mode: crate::PowerState) {
+        let mode_val = match mode {
+            crate::PowerState::On => 0,
+            crate::PowerState::Sleep => 1,
+            crate::PowerState::DeepSleep => 2,
+            crate::PowerState::Standby => 3,
+            crate::PowerState::Off => 4,
+        };
+        
+        // 简化实现，直接写入模式值
+        self.regs().PWRMODE_CON.set(mode_val);
     }
     
     /// 触发软件控制
-    pub fn trigger_software_control(&self, value: u32) {
+    pub fn trigger_software_control(&self, reset: bool, sleep: bool, deep_sleep: bool) {
+        let mut value = 0u32;
+        if reset { value |= 1; }
+        if sleep { value |= 2; }
+        if deep_sleep { value |= 4; }
+        
         self.regs().SFT_CON.set(value);
     }
     
@@ -189,5 +499,21 @@ impl Rk3588Pmu {
     pub fn configure_power_optimization(&self, noc_auto: u32, bus_idle: u32) {
         self.regs().NOC_AUTO_ENA.set(noc_auto);
         self.regs().BUS_IDLE_REQ.set(bus_idle);
+    }
+    
+    // 向后兼容的传统接口
+    
+    /// 传统接口：设置电源关闭控制
+    pub fn set_pwrdn_control(&self, value: u32) {
+        self.regs().PWRDN_CON.set(value);
+    }
+    
+    /// 传统接口：修改电源关闭控制寄存器的特定位
+    pub fn modify_pwrdn_control<F>(&self, f: F) 
+    where
+        F: FnOnce(u32) -> u32,
+    {
+        let current = self.regs().PWRDN_CON.get();
+        self.regs().PWRDN_CON.set(f(current));
     }
 }
