@@ -9,12 +9,12 @@ extern crate alloc;
 use core::fmt;
 
 // 模块声明
-pub mod registers;
 pub mod power;
+pub mod registers;
 
 // 重新导出核心模块
-pub use registers::RK3588_PMU_BASE;
 pub use power::Rk3588PowerManager;
+pub use registers::RK3588_PMU_BASE;
 
 /// RK3588 电源域定义
 #[repr(u32)]
@@ -71,21 +71,54 @@ pub struct CpuFreq {
 /// 预定义的 CPU 频率档位（适配 RK3588 全系列，包括 Orange Pi 5 Plus）
 pub mod cpu_freqs {
     use super::CpuFreq;
-    
+
     // 小核心 (Cortex-A55) 频率表
-    pub const FREQ_408M: CpuFreq = CpuFreq { freq_mhz: 408, voltage_mv: 825 };
-    pub const FREQ_600M: CpuFreq = CpuFreq { freq_mhz: 600, voltage_mv: 825 };
-    pub const FREQ_816M: CpuFreq = CpuFreq { freq_mhz: 816, voltage_mv: 850 };
-    pub const FREQ_1008M: CpuFreq = CpuFreq { freq_mhz: 1008, voltage_mv: 875 };
-    pub const FREQ_1200M: CpuFreq = CpuFreq { freq_mhz: 1200, voltage_mv: 925 };
-    pub const FREQ_1416M: CpuFreq = CpuFreq { freq_mhz: 1416, voltage_mv: 975 };
-    pub const FREQ_1608M: CpuFreq = CpuFreq { freq_mhz: 1608, voltage_mv: 1025 };
-    pub const FREQ_1800M: CpuFreq = CpuFreq { freq_mhz: 1800, voltage_mv: 1075 };
-    
+    pub const FREQ_408M: CpuFreq = CpuFreq {
+        freq_mhz: 408,
+        voltage_mv: 825,
+    };
+    pub const FREQ_600M: CpuFreq = CpuFreq {
+        freq_mhz: 600,
+        voltage_mv: 825,
+    };
+    pub const FREQ_816M: CpuFreq = CpuFreq {
+        freq_mhz: 816,
+        voltage_mv: 850,
+    };
+    pub const FREQ_1008M: CpuFreq = CpuFreq {
+        freq_mhz: 1008,
+        voltage_mv: 875,
+    };
+    pub const FREQ_1200M: CpuFreq = CpuFreq {
+        freq_mhz: 1200,
+        voltage_mv: 925,
+    };
+    pub const FREQ_1416M: CpuFreq = CpuFreq {
+        freq_mhz: 1416,
+        voltage_mv: 975,
+    };
+    pub const FREQ_1608M: CpuFreq = CpuFreq {
+        freq_mhz: 1608,
+        voltage_mv: 1025,
+    };
+    pub const FREQ_1800M: CpuFreq = CpuFreq {
+        freq_mhz: 1800,
+        voltage_mv: 1075,
+    };
+
     // 大核心 (Cortex-A76) 频率表 - 支持更高频率（Orange Pi 5 Plus）
-    pub const FREQ_2016M: CpuFreq = CpuFreq { freq_mhz: 2016, voltage_mv: 1125 };
-    pub const FREQ_2208M: CpuFreq = CpuFreq { freq_mhz: 2208, voltage_mv: 1200 };
-    pub const FREQ_2400M: CpuFreq = CpuFreq { freq_mhz: 2400, voltage_mv: 1300 };
+    pub const FREQ_2016M: CpuFreq = CpuFreq {
+        freq_mhz: 2016,
+        voltage_mv: 1125,
+    };
+    pub const FREQ_2208M: CpuFreq = CpuFreq {
+        freq_mhz: 2208,
+        voltage_mv: 1200,
+    };
+    pub const FREQ_2400M: CpuFreq = CpuFreq {
+        freq_mhz: 2400,
+        voltage_mv: 1300,
+    };
 }
 
 /// 电源管理错误类型
@@ -143,9 +176,11 @@ impl RegisterAccess for MmioRegisterAccess {
     unsafe fn read_reg(&self, addr: u32) -> u32 {
         unsafe { core::ptr::read_volatile(addr as *const u32) }
     }
-    
+
     unsafe fn write_reg(&self, addr: u32, value: u32) {
-        unsafe { core::ptr::write_volatile(addr as *mut u32, value); }
+        unsafe {
+            core::ptr::write_volatile(addr as *mut u32, value);
+        }
     }
 }
 
@@ -155,32 +190,48 @@ pub struct PowerStatus {
     pub domains: [PowerState; 12],
     pub cpu_little_freq: CpuFreq,
     pub cpu_big_freq: CpuFreq,
-    pub power_consumption: f32,  // mW
-    pub temperature: f32,        // °C
+    pub power_consumption: f32, // mW
+    pub temperature: f32,       // °C
 }
 
 impl fmt::Display for PowerStatus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         writeln!(f, "=== RK3588 Power Status ===")?;
-        writeln!(f, "CPU Little: {} MHz @ {} mV", 
-                self.cpu_little_freq.freq_mhz, self.cpu_little_freq.voltage_mv)?;
-        writeln!(f, "CPU Big: {} MHz @ {} mV", 
-                self.cpu_big_freq.freq_mhz, self.cpu_big_freq.voltage_mv)?;
+        writeln!(
+            f,
+            "CPU Little: {} MHz @ {} mV",
+            self.cpu_little_freq.freq_mhz, self.cpu_little_freq.voltage_mv
+        )?;
+        writeln!(
+            f,
+            "CPU Big: {} MHz @ {} mV",
+            self.cpu_big_freq.freq_mhz, self.cpu_big_freq.voltage_mv
+        )?;
         writeln!(f, "Power Consumption: {:.1} mW", self.power_consumption)?;
         writeln!(f, "Temperature: {:.1}°C", self.temperature)?;
-        
+
         writeln!(f, "\nPower Domains:")?;
         let domain_names = [
-            "CpuLittle", "CpuBig", "Gpu", "Npu", "Vpu", "Rga",
-            "Vi", "Vo", "Audio", "Usb", "Pcie", "Sdmmc"
+            "CpuLittle",
+            "CpuBig",
+            "Gpu",
+            "Npu",
+            "Vpu",
+            "Rga",
+            "Vi",
+            "Vo",
+            "Audio",
+            "Usb",
+            "Pcie",
+            "Sdmmc",
         ];
-        
+
         for (i, &name) in domain_names.iter().enumerate() {
             if i < self.domains.len() {
                 writeln!(f, "  {}: {:?}", name, self.domains[i])?;
             }
         }
-        
+
         Ok(())
     }
 }
