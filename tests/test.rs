@@ -24,8 +24,9 @@ mod tests {
     #[test]
     fn test_pm() {
         let reg = get_syscon_addr();
+        let board = RkBoard::Rk3588;
 
-        
+        let mut pm = RockchipPM::new(reg, board);
     }
 
     fn get_syscon_addr() -> NonNull<u8> {

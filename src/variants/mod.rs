@@ -1,5 +1,7 @@
 use alloc::collections::btree_map::BTreeMap;
 
+use crate::RkBoard;
+
 #[macro_use]
 mod _macros;
 
@@ -35,6 +37,14 @@ pub struct RockchipPmuInfo {
     pub gpu_power_transition_time: u32,
 
     pub domains: DomainMap,
+}
+
+impl RockchipPmuInfo {
+    pub fn new(board: RkBoard) -> Self {
+        match board {
+            RkBoard::Rk3588 => rk3588::pmu_info(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default)]
