@@ -9,12 +9,13 @@ mod rk3588;
 
 pub type DomainMap = BTreeMap<PD, RockchipDomainInfo>;
 
+#[repr(transparent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct PD(usize);
+pub struct PD(pub usize);
 
-impl From<usize> for PD {
-    fn from(value: usize) -> Self {
-        PD(value)
+impl From<u32> for PD {
+    fn from(value: u32) -> Self {
+        PD(value as usize)
     }
 }
 

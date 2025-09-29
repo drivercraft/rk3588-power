@@ -67,4 +67,16 @@ impl PmuRegs {
     pub fn pwr_con0(&self) -> &ReadWrite<u32, PMU_PWR_CON0::Register> {
         self.reg(0x0)
     }
+
+    /// 读取32位寄存器值
+    pub fn read_u32(&self, offset: usize) -> u32 {
+        unsafe { core::ptr::read_volatile(self.base_addr.as_ptr().add(offset) as *const u32) }
+    }
+
+    /// 写入32位寄存器值
+    pub fn write_u32(&self, offset: usize, value: u32) {
+        unsafe {
+            core::ptr::write_volatile(self.base_addr.as_ptr().add(offset) as *mut u32, value);
+        }
+    }
 }

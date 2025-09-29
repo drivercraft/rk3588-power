@@ -1,4 +1,68 @@
-# Rockchip 电源管理驱动
+# RK3588 电源管理驱动 (rockchip-pm)
+
+基于内核驱动 `pm_domains.c` 实现的 RK3588 电源管理 Rust 库。
+
+## 功能特性
+
+- 🔋 **NPU 电源管理**: 支持 RK3588 NPU 相关的所有电源域控制
+- 🚀 **最小化实现**: 基于内核驱动的核心逻辑，提供最小但完整的电源控制功能
+- 🛡️ **内存安全**: 使用 Rust 的类型系统确保内存安全和并发安全
+- 📋 **无标准库**: `#![no_std]` 设计，适用于嵌入式环境
+
+## 支持的电源域
+
+基于 `pm_domains.c` 中的 RK3588 电源域定义：
+
+- **NPUTOP** (ID: 9): NPU 顶层电源域
+- **NPU** (ID: 8): NPU 主电源域  
+- **NPU1** (ID: 10): NPU 核心1 电源域
+- **NPU2** (ID: 11): NPU 核心2 电源域
+
+## 使用示例
+
+```rust
+use rockchip_pm::{RockchipPM, RkBoard};
+use core::ptr::NonNull;
+
+/// NPU 主电源域
+pub const NPU: PD = PD(8);
+/// NPU TOP 电源域  
+pub const NPUTOP: PD = PD(9);
+/// NPU1 电源域
+pub const NPU1: PD = PD(10);
+/// NPU2 电源域
+pub const NPU2: PD = PD(11);
+
+// 初始化 PMU (基地址需要从设备树获取)
+let pmu_base = unsafe { NonNull::new_unchecked(0xfd8d8000 as *mut u8) };
+let mut pm = RockchipPM::new(pmu_base, RkBoard::Rk3588);
+
+// 单独控制电源域
+pm.power_domain_on(NPU1)?;
+pm.power_domain_off(NPU2)?;
+```
+
+## 内存映射要求
+
+使用此库需要确保：
+
+1. **PMU 基地址正确**: 通常为 `0xfd8d8000`（需要从设备树确认）
+2. **内存映射权限**: 需要对 PMU 寄存器区域的读写权限
+3. **时钟配置**: 确保 PMU 时钟已正确配置
+
+## 注意事项
+
+⚠️ **重要**: 此库直接操作硬件寄存器，使用前请确保：
+
+- 系统已正确初始化 PMU 硬件
+- 没有其他驱动同时控制相同的电源域
+- 在实际硬件上测试前进行充分的验证
+
+## 许可证
+
+本项目基于与 Linux 内核相同的 GPL-2.0 许可证。
+
+## 参考资料
 
 ## 构建和测试
 
