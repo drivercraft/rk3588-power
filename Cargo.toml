@@ -1,16 +1,16 @@
 [package]
 edition = "2024"
-name = "rk3588-power"
+name = "rockchip-pm"
 version = "0.1.0"
 
 [dependencies]
 mbarrier = "0.1"
-dma-api = { version = "0.3", features = ["alloc"] }
+dma-api = { version = "0.5", features = ["alloc"] }
 log = "0.4"
-tock-registers = "0.9"
+tock-registers = "0.10"
 
 [dev-dependencies]
-bare-test = "0.4"
+bare-test = "0.7"
 
 [build-dependencies]
 bare-test-macros = "0.2"

@@ -8,6 +8,7 @@ extern crate alloc;
 
 use core::fmt;
 
+mod variants;
 // 模块声明
 pub mod power;
 pub mod registers;
@@ -15,6 +16,12 @@ pub mod registers;
 // 重新导出核心模块
 pub use power::Rk3588PowerManager;
 pub use registers::RK3588_PMU_BASE;
+
+pub struct RockchipPM{
+    
+}
+
+
 
 /// RK3588 电源域定义
 #[repr(u32)]

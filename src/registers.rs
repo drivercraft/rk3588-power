@@ -5,7 +5,7 @@
 
 use core::ptr::NonNull;
 use tock_registers::{
-    interfaces::{ReadWriteable, Readable, Writeable},
+    interfaces::*,
     register_bitfields, register_structs,
     registers::{ReadOnly, ReadWrite, WriteOnly},
 };
