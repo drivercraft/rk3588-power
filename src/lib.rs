@@ -7,6 +7,7 @@
 extern crate alloc;
 
 use mbarrier::mb;
+use rdif_base::DriverGeneric;
 
 use crate::{registers::PmuRegs, variants::RockchipPmuInfo};
 use core::ptr::NonNull;
@@ -157,5 +158,15 @@ impl RockchipPM {
 
         let val = self.reg.read_u32(self.info.idle_offset as usize);
         Ok((val & (domain_info.idle_mask as u32)) == (domain_info.idle_mask as u32))
+    }
+}
+
+impl DriverGeneric for RockchipPM {
+    fn open(&mut self) -> Result<(), rdif_base::KError> {
+        Ok(())
+    }
+
+    fn close(&mut self) -> Result<(), rdif_base::KError> {
+        Ok(())
     }
 }
