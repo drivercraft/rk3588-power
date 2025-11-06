@@ -64,6 +64,7 @@ impl PmuRegs {
         unsafe { &*(self.base_addr.as_ptr().add(offset) as *const T) }
     }
 
+    #[allow(unused)]
     pub fn pwr_con0(&self) -> &ReadWrite<u32, PMU_PWR_CON0::Register> {
         self.reg(0x0)
     }
