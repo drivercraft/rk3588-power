@@ -45,6 +45,7 @@ define_power_domains! {
 }
 
 /// Create domain info with QoS configuration
+#[allow(clippy::too_many_arguments)]
 fn domain_m_with_qos(
     name: &'static str,
     pwr: i32,
@@ -57,12 +58,13 @@ fn domain_m_with_qos(
     qos_offsets: &'static [usize],
 ) -> RockchipDomainInfo {
     let mut info = domain_m(name, pwr, status, req, idle, ack, wakeup, keepon);
-    info.qos_offsets = unsafe { core::mem::transmute(qos_offsets) };
+    info.qos_offsets = unsafe { core::mem::transmute::<&[usize], &[u32]>(qos_offsets) };
     info.num_qos = qos_offsets.len();
     info
 }
 
 /// Create domain info with both QoS and dependency configuration
+#[allow(clippy::too_many_arguments)]
 fn domain_m_with_deps_qos(
     name: &'static str,
     pwr: i32,
@@ -77,7 +79,7 @@ fn domain_m_with_deps_qos(
 ) -> RockchipDomainInfo {
     let mut info = domain_m(name, pwr, status, req, idle, ack, wakeup, keepon);
     info.dependency = dependency;
-    info.qos_offsets = unsafe { core::mem::transmute(qos_offsets) };
+    info.qos_offsets = unsafe { core::mem::transmute::<&[usize], &[u32]>(qos_offsets) };
     info.num_qos = qos_offsets.len();
     info
 }

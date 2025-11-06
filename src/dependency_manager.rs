@@ -47,12 +47,12 @@ impl DependencyManager {
         }
 
         // Check if domain has a parent dependency
-        if let Some(ref dependency) = info.dependency {
-            if let Some(parent) = dependency.parent {
-                // Parent must be active
-                if !self.active_domains.contains(&parent) {
-                    return Err(PowerError::DependencyNotMet);
-                }
+        if let Some(ref dependency) = info.dependency
+            && let Some(parent) = dependency.parent
+        {
+            // Parent must be active
+            if !self.active_domains.contains(&parent) {
+                return Err(PowerError::DependencyNotMet);
             }
         }
 

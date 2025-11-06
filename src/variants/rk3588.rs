@@ -127,6 +127,7 @@ pub fn pmu_info() -> RockchipPmuInfo {
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 fn domain_info(
     name: &'static str,
     pwr_offset: u32,
@@ -158,6 +159,7 @@ fn domain_info(
 }
 
 /// Create domain info with dependency configuration
+#[allow(clippy::too_many_arguments)]
 fn domain_info_with_deps(
     name: &'static str,
     pwr_offset: u32,
@@ -192,6 +194,7 @@ fn domain_info_with_deps(
 }
 
 /// Create domain info with dependency and QoS configuration
+#[allow(clippy::too_many_arguments)]
 fn domain_info_with_deps_qos(
     name: &'static str,
     pwr_offset: u32,
@@ -224,12 +227,13 @@ fn domain_info_with_deps_qos(
     );
     info.dependency = dependency;
     // Convert usize offsets to u32 (safe on 32-bit and 64-bit systems for memory-mapped addresses)
-    info.qos_offsets = unsafe { core::mem::transmute(qos_offsets) };
+    info.qos_offsets = unsafe { core::mem::transmute::<&[usize], &[u32]>(qos_offsets) };
     info.num_qos = qos_offsets.len();
     info
 }
 
 /// Create domain info with QoS configuration only (no dependencies)
+#[allow(clippy::too_many_arguments)]
 fn domain_info_with_qos(
     name: &'static str,
     pwr_offset: u32,
@@ -259,7 +263,7 @@ fn domain_info_with_qos(
         wakeup,
         false,
     );
-    info.qos_offsets = unsafe { core::mem::transmute(qos_offsets) };
+    info.qos_offsets = unsafe { core::mem::transmute::<&[usize], &[u32]>(qos_offsets) };
     info.num_qos = qos_offsets.len();
     info
 }

@@ -45,6 +45,7 @@ use super::RockchipDomainInfo;
 /// ```c
 /// #define DOMAIN_M(_name, pwr, status, req, idle, ack, wakeup, keepon)
 /// ```
+#[allow(clippy::too_many_arguments)]
 pub fn domain_m(
     name: &'static str,
     pwr: i32,
@@ -76,6 +77,7 @@ pub fn domain_m(
 /// ```c
 /// #define DOMAIN_M_O_R(_name, p_offset, pwr, status, m_offset, m_status, r_status, r_offset, req, idle, ack, wakeup, keepon)
 /// ```
+#[allow(clippy::too_many_arguments)]
 pub fn domain_m_o_r(
     name: &'static str,
     pwr_offset: u32,
