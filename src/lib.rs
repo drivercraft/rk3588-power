@@ -136,17 +136,17 @@ impl RockchipPM {
             .domains
             .get(&domain)
             .ok_or(PowerError::DomainNotFound)?;
-        
+
         // Check dependencies
         self.dep_manager.can_power_on(domain, domain_info)?;
-        
+
         // Execute power on
         let mut sequencer = PowerSequencer::new(&mut self.reg, &self.info);
         sequencer.power_on_sequence(domain)?;
-        
+
         // Mark as active
         self.dep_manager.mark_powered_on(domain);
-        
+
         Ok(())
     }
 
@@ -168,17 +168,17 @@ impl RockchipPM {
             .domains
             .get(&domain)
             .ok_or(PowerError::DomainNotFound)?;
-        
+
         // Check dependencies
         self.dep_manager.can_power_off(domain, domain_info)?;
-        
+
         // Execute power off
         let mut sequencer = PowerSequencer::new(&mut self.reg, &self.info);
         sequencer.power_off_sequence(domain)?;
-        
+
         // Mark as inactive
         self.dep_manager.mark_powered_off(domain);
-        
+
         Ok(())
     }
 

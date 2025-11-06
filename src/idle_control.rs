@@ -6,7 +6,7 @@
 //! - Idle state verification
 //! - Timeout handling for idle operations
 
-use crate::{registers::PmuRegs, variants::RockchipDomainInfo, PowerError};
+use crate::{PowerError, registers::PmuRegs, variants::RockchipDomainInfo};
 use mbarrier::mb;
 
 /// Idle request timeout (in iterations)

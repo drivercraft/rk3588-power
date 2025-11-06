@@ -5,7 +5,7 @@
 //! - Memory power state verification
 //! - Timeout handling for memory operations
 
-use crate::{registers::PmuRegs, variants::RockchipDomainInfo, PowerError};
+use crate::{PowerError, registers::PmuRegs, variants::RockchipDomainInfo};
 use mbarrier::mb;
 
 /// Memory power control timeout (in iterations)

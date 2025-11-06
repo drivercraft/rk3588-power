@@ -18,7 +18,7 @@ impl PowerDomain {
     pub const fn new(id: usize) -> Self {
         PowerDomain(id)
     }
-    
+
     pub const fn id(&self) -> usize {
         self.0
     }
@@ -88,13 +88,13 @@ pub struct RockchipDomainInfo {
     pub req_offset: u32,
     pub repair_offset: u32,
     pub repair_mask: i32,
-    
+
     /// QoS configuration
     /// Number of QoS ports for this domain
     pub num_qos: usize,
     /// QoS port base address offsets (relative to system bus base)
     pub qos_offsets: &'static [u32],
-    
+
     /// Domain dependency information
     pub dependency: Option<DomainDependency>,
 }

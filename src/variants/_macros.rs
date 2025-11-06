@@ -40,7 +40,7 @@ macro_rules! bit {
 use super::RockchipDomainInfo;
 
 /// DOMAIN_M macro equivalent - simpler domain definition for chips like RK3568
-/// 
+///
 /// This corresponds to the Linux kernel's DOMAIN_M macro:
 /// ```c
 /// #define DOMAIN_M(_name, pwr, status, req, idle, ack, wakeup, keepon)
